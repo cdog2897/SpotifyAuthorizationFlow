@@ -1,3 +1,6 @@
+# code by Caleb Wolin
+# 11/03/2022
+
 import base64
 import requests
 import datetime
@@ -6,14 +9,24 @@ from urllib.parse import urlparse
 import webbrowser
 import os
 
+'''
+AUTHORIZATION PROCESS for authorization code flow:
+1. request authorization to access data
+2. prompt user to login
+3. request access token and refresh token
+4. return tokens
+5. use tokens
+6. refresh tokens using previous refresh tokens
+'''
 
+# key codes
 client_id = "7e6c2c2025664df0acf25c227538d454"
 client_secret = "d89300aaa95941a29252c300bdac0c2a"
 redirect_uri = "https://example.com/callback/"
 token_url = "https://accounts.spotify.com/api/token"
 
 
-
+# authorization object to be used dynamically
 class SpotifyAPI():
     access_token = None
     access_token_expires = datetime.datetime.now()
@@ -22,6 +35,7 @@ class SpotifyAPI():
     client_secret = None
     refresh_token = None
 
+    #constructor
     def __init__(self, client_id, client_secret, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.client_id = client_id
@@ -38,6 +52,7 @@ class SpotifyAPI():
                     "scope": "user-read-private"
         }
 
+    # login prompt, COPY CODE FROM URL FOR NEXT STEP
     def perform_auth(self):
         token_data = self.get_auth_data()
         token_url = "https://accounts.spotify.com/authorize"
@@ -48,10 +63,9 @@ class SpotifyAPI():
     '''
         Request access tokens
     '''
+    # get data= information
     def get_token_data(self):
-        
-        code = query.split("=")[1]
-        print(code)
+        code = ""   # code from url goes here
         return {
             "grant_type": "authorization_code",
             "code": code,
@@ -68,6 +82,9 @@ class SpotifyAPI():
         print(data)
 
 
+    '''
+    refresh tokens
+    '''
     def get_refresh_token(self):
         headers = self.get_token_header()
         refresh_token = self.refresh_token
@@ -82,10 +99,11 @@ class SpotifyAPI():
         self.access_token = data['access_token']
 
 
+    """
+    helper functions
+    """
     def get_client_credentials(self):
-        '''
-        returns a base64 encoded string
-        '''
+        # returns a base64 encoded string
         client_id = self.client_id
         client_secret = self.client_secret
         if client_id == None or client_secret == None:
@@ -102,12 +120,8 @@ class SpotifyAPI():
         }
 
 
-
+# testing
 spotify = SpotifyAPI(client_id, client_secret)
-
-
-
-
 #spotify.perform_auth()
 #spotify.get_access_token()
 #spotify.get_refresh_token()

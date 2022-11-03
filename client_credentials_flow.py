@@ -1,7 +1,17 @@
+# code by Caleb Wolin
+# 11/03/2022
+
 import base64
 import requests
 import datetime
 from urllib.parse import urlencode
+
+'''
+AUTHORIZATION PROCESS for client crediential flow:
+1. request access token
+2. get access token from Spotify accounts service
+3. use access token in Web API
+'''
 
 # codes:
 
@@ -10,28 +20,30 @@ client_secret = "d89300aaa95941a29252c300bdac0c2a"
 redirect_uri = "https://example.com/callback/"
 
 
-
+# authorization object to be used dynamically
 class SpotifyAPI():
+    # key codes
     access_token = None
     access_token_expires = datetime.datetime.now()
     access_token_did_expire = True
     client_id = None
     client_secret = None
     token_url = "https://accounts.spotify.com/api/token"
-    method = "POST"
 
+    # constructor
     def __init__(self, client_id, client_secret, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.client_id = client_id
         self.client_secret = client_secret
 
+
+    # get data= information
     def get_token_data(self):
         return  {
                     "grant_type": "client_credentials"
         }
 
-    
-
+    # return a base64 encoded string
     def get_client_credentials(self):
         '''
         returns a base64 encoded string
@@ -44,13 +56,14 @@ class SpotifyAPI():
         client_creds_b64 = base64.b64encode(client_creds.encode())
         return client_creds_b64.decode()
 
-
+    # get headers= information
     def get_token_header(self):
         client_creds_b64 = self.get_client_credentials()
         return  {
             "Authorization": f"Basic {client_creds_b64}"
         }
 
+    # get access token
     def get_access_token(self):
         token = self.access_token
         expires = self.access_token_expires
@@ -63,7 +76,6 @@ class SpotifyAPI():
             return self.get_access_token()
         return token
 
-    # extract access token
     def perform_auth(self):
         token_url = self.token_url
         token_data = self.get_token_data()
@@ -82,12 +94,11 @@ class SpotifyAPI():
         self.access_token_expires = expires
         self.access_token_did_expire = expires < now
         return True
-        
+
+# testing
 spotify = SpotifyAPI(client_id, client_secret)
 spotify.perform_auth()
 access_token = spotify.access_token
-
-
 headers = {
     "Authorization": f"Bearer {access_token}"
 }
